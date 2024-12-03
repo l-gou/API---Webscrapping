@@ -28,3 +28,5 @@ class FirestoreClient:
         raise FileExistsError(
             f"No document found at {collection_name} with the id {document_id}"
         )
+
+
