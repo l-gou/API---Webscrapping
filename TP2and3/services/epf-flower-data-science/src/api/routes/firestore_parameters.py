@@ -27,6 +27,12 @@ class ParametersResponse(BaseModel):
     message: str
     parameters: dict
 
+class UserRegisterRequest(BaseModel):
+    email: str
+    password: str
+
+
+
 @router.get("/parameters")
 async def get_parameters():
     try:
@@ -126,10 +132,11 @@ def get_current_user(request: Request):
     
     # The token is usually in the form "Bearer <token>"
     token = authorization_header.split(" ")[1]
-    
+    print(token)
     # Verify the token
     user = verify_token(token)
-    
+    print(user)
+
     return user
 
 ############## Step 17 ################
@@ -141,18 +148,23 @@ from firebase_admin import auth
 
 router = APIRouter()
 
+credentials = service_account.Credentials.from_service_account_file( 'TP2and3/careful-maxim-443609-j6-bbedea89fd10.json'  )
+
+
 firebase_admin.initialize_app(credentials)
 
+from fastapi import Query
 
 @router.post("/register")
-async def register_user(email: str, password: str):
+
+async def register_user(email: str = Query(...), password: str = Query(...)):
     try:
         # Create user with email and password
-        user = auth.create_user(
+        new_user = auth.create_user(
             email=email,
             password=password,
         )
-        return {"message": f"User {user.uid} created successfully!"}
+        return {"message": f"User {new_user.uid} created successfully!"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error registering user: {e}")
 
