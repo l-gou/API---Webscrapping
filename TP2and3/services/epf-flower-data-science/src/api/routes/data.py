@@ -12,14 +12,14 @@ logging.basicConfig(level=logging.INFO)
 def download_dataset():
     try:
         # Specify the path to the folder where kaggle.json is located
-        kaggle_json_path = "TP2 and  3/services/epf-flower-data-science/" 
+        kaggle_json_path = "TP2and3/services/epf-flower-data-science/" 
 
         # Set the KAGGLE_CONFIG_DIR environment variable to the path of the folder containing kaggle.json
         os.environ['KAGGLE_CONFIG_DIR'] = os.path.abspath(kaggle_json_path)
 
         # Dataset identifier (not the full URL)
         dataset_id = "uciml/iris"  # Correct Kaggle dataset identifier
-        data_dir = "TP2 and  3/services/epf-flower-data-science/src/data"
+        data_dir = "TP2and3/services/epf-flower-data-science/src/data"
 
         # Check if the dataset is already downloaded
         if not os.path.exists(os.path.join(data_dir, "iris.csv")):

@@ -9,7 +9,7 @@ router = APIRouter()
 # New endpoint to load the dataset as a pandas DataFrame and return it as JSON
 @router.get("/load-iris-dataset", name="Load Iris Dataset")
 def load_iris_dataset():
-    data_dir = "TP2 and  3/services/epf-flower-data-science/src/data"
+    data_dir = "TP2and3/services/epf-flower-data-science/src/data"
     iris_path = os.path.join(data_dir, "iris.csv")
 
     if not os.path.exists(iris_path):

@@ -4,16 +4,13 @@ import logging
 from fastapi import APIRouter
 from sklearn.preprocessing import StandardScaler
 from fastapi.responses import JSONResponse
-
 from src.api.routes import load  # Assuming load.py is in the src/api/routes directory
-
 
 router = APIRouter()
 
-
 @router.get("/process-data", name="Process Iris Dataset")
 def process_data():
-    data_dir = "TP2 and  3/services/epf-flower-data-science/src/data"
+    data_dir = "TP2and3/services/epf-flower-data-science/src/data"
     iris_path = os.path.join(data_dir, "iris.csv")
 
     if not os.path.exists(iris_path):
@@ -27,14 +24,32 @@ def process_data():
         if isinstance(iris_response, dict) and "error" in iris_response:
             return iris_response  # Return the error if it exists
         
-        # Get the 'data' part of the response (which is a dictionary)
-        iris_json = iris_response["data"]
+        # Extract the actual content from JSONResponse (assuming it returns JSON in the body)
+        iris_json = iris_response.body.decode("utf-8")  # Get the response body and decode it
         
+        # Convert the string into a dictionary (JSON data)
+        import json
+        iris_data = json.loads(iris_json)
+
+        # Check if the data is nested under a key like 'data'
+        if 'data' in iris_data:
+            iris_data = iris_data['data']  # Extract the nested data
+
         # Convert the processed data back into a DataFrame
-        iris_df = pd.DataFrame(iris_json)
-        
+        iris_df = pd.DataFrame(iris_data)
+
+        # Log the columns for debugging
+        logging.info(f"Columns in the DataFrame: {iris_df.columns.tolist()}")
+
+        # Fix potential issues with column names (strip any whitespace)
+        iris_df.columns = iris_df.columns.str.strip()
+
+        # Check if 'Species' column exists (after cleaning the column names)
+        if 'Species' not in iris_df.columns:
+            return {"error": "Failed to process dataset: 'Species' column not found in the data."}
+
         # Separate features and target
-        X = iris_df.iloc[:, :-1]  # Features (exclude the last column 'species')
+        X = iris_df.iloc[:, :-1]  # Features (exclude the last column 'Species')
         y = iris_df['Species']    # Target (species column)
         
         # Apply feature scaling
