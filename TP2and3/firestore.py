@@ -1,4 +1,5 @@
 import google.auth
+from google.oauth2 import service_account
 from google.cloud import firestore
 
 
@@ -9,8 +10,10 @@ class FirestoreClient:
 
     def __init__(self) -> None:
         """Init the client."""
-        credentials, _ = google.auth.default()
-
+        #credentials, _ = google.auth.default()
+        credentials = service_account.Credentials.from_service_account_file(
+            'TP2and3/careful-maxim-443609-j6-bbedea89fd10.json'  # Remplacez par le chemin réel vers votre fichier de clé
+        )
         self.client = firestore.Client(credentials=credentials)
 
     def get(self, collection_name: str, document_id: str) -> dict:
@@ -28,5 +31,3 @@ class FirestoreClient:
         raise FileExistsError(
             f"No document found at {collection_name} with the id {document_id}"
         )
-
-

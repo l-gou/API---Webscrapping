@@ -4,7 +4,8 @@ import logging
 from fastapi import APIRouter
 from sklearn.preprocessing import StandardScaler
 from fastapi.responses import JSONResponse
-from src.api.routes import load  # Assuming load.py is in the src/api/routes directory
+from src.api.routes import load  
+
 
 router = APIRouter()
 
