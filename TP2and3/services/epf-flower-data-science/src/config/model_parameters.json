@@ -1,0 +1,43 @@
+{
+    "LogisticRegression": {
+      "penalty": "l2",
+      "C": 1.0,
+      "solver": "lbfgs",
+      "max_iter": 100,
+      "multi_class": "auto",
+      "random_state": 42
+    },
+    "RandomForestClassifier": {
+      "n_estimators": 100,
+      "max_depth": 5,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "SVC": {
+      "C": 1.0,
+      "kernel": "rbf",
+      "gamma": "scale",
+      "degree": 3,
+      "random_state": 42
+    },
+    "KNeighborsClassifier": {
+      "n_neighbors": 5,
+      "weights": "uniform",
+      "algorithm": "auto",
+      "metric": "minkowski",
+      "p": 2
+    },
+    "DecisionTreeClassifier": {
+      "criterion": "gini",
+      "max_depth": 5,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "random_state": 42
+    },
+    "GaussianNB": {
+      "var_smoothing": 1e-9
+    }
+  }
+  

@@ -49,8 +49,8 @@ def process_data():
             return {"error": "Failed to process dataset: 'Species' column not found in the data."}
 
         # Separate features and target
-        X = iris_df.iloc[:, :-1]  # Features (exclude the last column 'Species')
         y = iris_df['Species']    # Target (species column)
+        X = iris_df.drop(iris_df.columns[[0, -1]], axis=1)
         
         # Apply feature scaling
         scaler = StandardScaler()
