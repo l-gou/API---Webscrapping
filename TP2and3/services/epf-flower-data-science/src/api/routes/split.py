@@ -1,16 +1,24 @@
 import os
 import pandas as pd
 import logging
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from sklearn.model_selection import train_test_split
 from fastapi.responses import JSONResponse
-
+from typing import Optional
 from src.api.routes import process
 
 router = APIRouter()
 
 @router.get("/split-data", name="Split Iris Dataset")
 def split_data():
+    """
+    Splits the Iris dataset into training and testing sets.
+
+    Parameters:
+
+    Returns:
+        JSONResponse: The split dataset as JSON, or an error message if processing fails.
+    """
     try:
         # Process data first (scaling) by calling the /process-data endpoint
         iris_response = process.process_data()  # Get the processed (scaled) data

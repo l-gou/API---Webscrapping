@@ -3,6 +3,7 @@ import json
 import logging
 import joblib
 import pandas as pd
+from typing import Optional, Union, Dict, Any
 from fastapi import APIRouter
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -16,7 +17,17 @@ from src.api.routes import split
 router = APIRouter()
 
 # Load model parameters from the JSON file
-def load_model_parameters():
+def load_model_parameters() -> Dict[str, Dict[str, Any]]:
+    """
+    Load model parameters from a JSON configuration file.
+
+    Returns:
+        dict: A dictionary containing model parameters for each model type.
+
+    Raises:
+        FileNotFoundError: If the configuration file is not found.
+        json.JSONDecodeError: If the configuration file cannot be parsed as JSON.
+    """
     model_params_path = os.path.join("TP2and3/services/epf-flower-data-science/src/config", "model_parameters.json")
     if not os.path.exists(model_params_path):
         raise FileNotFoundError(f"Model parameters file not found at {model_params_path}")
@@ -26,7 +37,20 @@ def load_model_parameters():
 
 
 # Select the model based on the name and parameters
-def get_model(model_name, params):
+def get_model(model_name: str, params: Dict[str, Any]) -> Any:
+    """
+    Retrieve a classification model instance based on the provided model name and parameters.
+
+    Parameters:
+        model_name (str): The name of the classification model (e.g., "RandomForestClassifier").
+        params (dict): A dictionary of parameters to initialize the model.
+
+    Returns:
+        sklearn.base.BaseEstimator: An instance of the specified classification model.
+
+    Raises:
+        ValueError: If the provided model name is not recognized.
+    """    
     if model_name == "RandomForestClassifier":
         return RandomForestClassifier(**params)
     elif model_name == "SVC":
@@ -42,7 +66,23 @@ def get_model(model_name, params):
 
 
 @router.get("/train-model", name="Train a Classification Model")
-def train_model(model_name: str):
+def train_model(model_name: str) -> Union[JSONResponse, Dict[str, str]]:
+    """
+    Train a classification model with preprocessed data and save it to disk.
+
+    Endpoint:
+        GET /train-model
+
+    Parameters:
+        model_name (str): The name of the classification model to train (e.g., "RandomForestClassifier").
+
+    Returns:
+        JSONResponse: A JSON response containing the status of the training process, the path where the model 
+        was saved, or an error message in case of failure.
+
+    Raises:
+        Exception: If an error occurs during model training or saving.
+    """
     try:
         # Call the split_data function from the split module and get the data
         split_data_response = split.split_data()

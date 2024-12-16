@@ -3,6 +3,7 @@ import json
 import logging
 import joblib
 import pandas as pd
+from typing import Dict, Any
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -18,7 +19,19 @@ class IrisFeatures(BaseModel):
 
 
 # Load the trained model from the file
-def load_trained_model(model_name: str):
+def load_trained_model(model_name: str) -> Any:
+    """
+    Load a trained model from the file system.
+
+    Parameters:
+        model_name (str): The name of the trained model to load.
+
+    Returns:
+        Any: The trained model instance.
+
+    Raises:
+        FileNotFoundError: If the model file does not exist.
+    """
     model_path = os.path.join("TP2and3/services/epf-flower-data-science/src", "models", f"{model_name}.joblib")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file '{model_name}.joblib' not found at {model_path}")
@@ -26,7 +39,23 @@ def load_trained_model(model_name: str):
 
 
 @router.post("/predict", name="Make Predictions with Trained Model")
-def predict(model_name: str, features: IrisFeatures):
+def predict(model_name: str, features: IrisFeatures) -> JSONResponse:
+    """
+    Make predictions using a trained model and provided input features.
+
+    Endpoint:
+        POST /predict
+
+    Parameters:
+        model_name (str): The name of the trained model to use for predictions.
+        features (IrisFeatures): A Pydantic model containing the input features for prediction.
+
+    Returns:
+        JSONResponse: A JSON response containing the model name and predictions.
+
+    Raises:
+        HTTPException: If the model file is not found or if an error occurs during prediction.
+    """
     try:
         # Load the trained model
         model = load_trained_model(model_name)

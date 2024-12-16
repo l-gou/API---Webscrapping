@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import logging
+from typing import Dict, Union
 from fastapi import APIRouter
 from sklearn.preprocessing import StandardScaler
 from fastapi.responses import JSONResponse
@@ -10,7 +11,24 @@ from src.api.routes import load
 router = APIRouter()
 
 @router.get("/process-data", name="Process Iris Dataset")
-def process_data():
+def process_data() -> Union[JSONResponse, Dict[str, str]]:
+    """
+    Process the Iris dataset by scaling the features and returning the processed data.
+
+    Endpoint:
+        GET /process-data
+
+    Returns:
+        Union[JSONResponse, Dict[str, str]]: A JSON response containing the processed dataset in JSON format, 
+        or an error message if processing fails.
+
+    Steps:
+        1. Verify that the Iris dataset exists in the specified directory.
+        2. Load the dataset using the `load_iris_dataset` function.
+        3. Extract and clean the dataset, ensuring required columns are present.
+        4. Scale the feature columns using `StandardScaler`.
+        5. Return the processed dataset as a JSON response.
+    """
     data_dir = "TP2and3/services/epf-flower-data-science/src/data"
     iris_path = os.path.join(data_dir, "iris.csv")
 

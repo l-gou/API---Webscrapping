@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request
 from google.cloud import firestore
+from typing import Dict, Union, List
 from pydantic import BaseModel
 from google.oauth2 import service_account
 import google.auth
@@ -19,22 +20,37 @@ class Parameters(BaseModel):
     criterion: str
 
 class ParamUpdate(BaseModel):
+    """Pydantic model for updating parameters."""
     n_estimators: int
     criterion: str
 
 
 class ParametersResponse(BaseModel):
+    """Response model for adding or updating parameters."""
     message: str
     parameters: dict
 
 class UserRegisterRequest(BaseModel):
+    """Pydantic model for user registration."""
     email: str
     password: str
 
 
 
 @router.get("/parameters")
-async def get_parameters():
+async def get_parameters() -> Dict[str, Union[Dict[str, str], str]]:
+    """
+    Retrieve all parameters from the Firestore "parameters" collection.
+
+    Returns:
+        A dictionary of parameters from the Firestore collection or an error message in case of failure.
+    
+    Example:
+        {
+            "param_1": {"n_estimators": 100, "criterion": "gini"},
+            "param_2": {"n_estimators": 200, "criterion": "entropy"}
+        }
+    """
     try:
         # Retrieve all documents from the "parameters" collection
         docs = db.collection("parameters").stream()
@@ -51,8 +67,19 @@ async def get_parameters():
 
 
 @router.post("/parameters", response_model=ParametersResponse)
-async def add_or_update_parameters(parameters: Parameters):
-    """Ajouter ou mettre à jour des paramètres dans Firestore."""
+async def add_or_update_parameters(parameters: Parameters) -> ParametersResponse:
+    """
+    Add or update parameters in Firestore.
+
+    Args:
+        parameters: The parameters to be added or updated.
+
+    Returns:
+        A response model containing a success message and the parameters.
+
+    Raises:
+        HTTPException: If an error occurs while interacting with Firestore.
+    """
     try:
         doc_ref = db.collection("parameters").document("parameters")
         doc = doc_ref.get()
@@ -74,7 +101,19 @@ async def add_or_update_parameters(parameters: Parameters):
         raise HTTPException(status_code=500, detail=f"Une erreur s'est produite : {str(e)}")
 
 
-def clear_collection(collection_name):
+def clear_collection(collection_name: str) -> None:
+    """
+    Clear all documents from a Firestore collection.
+
+    Args:
+        collection_name: The name of the collection to be cleared.
+
+    Returns:
+        None
+
+    Raises:
+        None: Just deletes documents from the specified collection.
+    """
     # Récupérer tous les documents dans la collection
     collection_ref = db.collection(collection_name)
     docs = collection_ref.stream()
@@ -89,9 +128,19 @@ def clear_collection(collection_name):
 
 
 @router.post("/parameters/{param_id}")
-async def update_parameter(param_id: str, param: ParamUpdate):
+async def update_parameter(param_id: str, param: ParamUpdate) -> Dict[str, str]:
     """
-    Met à jour les paramètres dans Firestore en fonction de param_id
+    Update parameters in Firestore based on param_id.
+
+    Args:
+        param_id: The ID of the parameter to be updated.
+        param: The updated parameter values.
+
+    Returns:
+        A message confirming the update.
+    
+    Raises:
+        HTTPException: If an error occurs while updating the parameter.
     """
     try:
         doc_ref = db.collection("parameters").document(param_id)
@@ -116,7 +165,19 @@ async def update_parameter(param_id: str, param: ParamUpdate):
 ############## Step 16 ################
 
 
-def verify_token(token: str):
+def verify_token(token: str) -> dict:
+    """
+    Verify the ID token using Firebase Authentication.
+
+    Args:
+        token: The Firebase ID token to verify.
+
+    Returns:
+        A dictionary with the decoded user information.
+
+    Raises:
+        HTTPException: If the token is invalid.
+    """
     try:
         # Verify the token with Firebase Authentication
         decoded_token = auth.verify_id_token(token)
@@ -124,7 +185,19 @@ def verify_token(token: str):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Unauthorized. Invalid token.")
 
-def get_current_user(request: Request):
+def get_current_user(request: Request) -> dict:
+    """
+    Get the current user from the request by extracting and verifying the token.
+
+    Args:
+        request: The FastAPI Request object.
+
+    Returns:
+        A dictionary with the user information.
+
+    Raises:
+        HTTPException: If the authorization token is missing or invalid.
+    """
     # Extract token from Authorization header
     authorization_header = request.headers.get("Authorization")
     if not authorization_header:
@@ -157,7 +230,20 @@ from fastapi import Query
 
 @router.post("/register")
 
-async def register_user(email: str = Query(...), password: str = Query(...)):
+async def register_user(email: str, password: str) -> dict:
+    """
+    Register a new user using Firebase Authentication.
+
+    Args:
+        email: The email of the user.
+        password: The password of the user.
+
+    Returns:
+        A dictionary containing the registration success message.
+
+    Raises:
+        HTTPException: If there is an error during registration.
+    """
     try:
         # Create user with email and password
         new_user = auth.create_user(
@@ -171,7 +257,19 @@ async def register_user(email: str = Query(...), password: str = Query(...)):
 
 
 @router.post("/login")
-async def login_user(id_token: str):
+async def login_user(id_token: str) -> dict:
+    """
+    Login a user using Firebase Authentication and ID token.
+
+    Args:
+        id_token: The Firebase ID token for the user.
+
+    Returns:
+        A dictionary containing the login success message and user info.
+
+    Raises:
+        HTTPException: If the ID token is invalid.
+    """
     try:
         # Verify the ID token
         decoded_token = auth.verify_id_token(id_token)
@@ -182,7 +280,19 @@ async def login_user(id_token: str):
 
 
 @router.post("/logout")
-async def logout_user(id_token: str):
+async def logout_user(id_token: str) -> dict:
+    """
+    Log out the user by revoking their refresh token.
+
+    Args:
+        id_token: The Firebase ID token of the user to log out.
+
+    Returns:
+        A dictionary containing the logout success message.
+
+    Raises:
+        HTTPException: If there is an error during logout.
+    """
     try:
         # Revoke the refresh token for the current user (force logout)
         decoded_token = auth.verify_id_token(id_token)
@@ -193,7 +303,19 @@ async def logout_user(id_token: str):
 
 
 
-def assign_admin_role(user_uid: str):
+def assign_admin_role(user_uid: str) -> None:
+    """
+    Assign the 'admin' role to a user by setting custom claims in Firebase.
+
+    Args:
+        user_uid: The UID of the user to be assigned the 'admin' role.
+
+    Returns:
+        None
+    
+    Raises:
+        Exception: If there is an error assigning the role.
+    """
     try:
         auth.set_custom_user_claims(user_uid, {"role": "admin"})
     except Exception as e:
@@ -201,7 +323,19 @@ def assign_admin_role(user_uid: str):
 
 
 
-def get_user_role(id_token: str):
+def get_user_role(id_token: str) -> str:
+    """
+    Get the role of a user by verifying their Firebase ID token.
+
+    Args:
+        id_token: The Firebase ID token to verify.
+
+    Returns:
+        The user's role (default is "user" if no custom role is set).
+    
+    Raises:
+        HTTPException: If there is an error fetching the role.
+    """
     try:
         decoded_token = auth.verify_id_token(id_token)
         role = decoded_token.get("role", "user")  # Default role is "user"
@@ -211,7 +345,20 @@ def get_user_role(id_token: str):
 
 
 @router.get("/users")
-async def get_all_users(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_all_users(request: Request, current_user: dict = Depends(get_current_user)) -> dict:
+    """
+    Get all users from Firestore (admins only).
+
+    Args:
+        request: The FastAPI Request object.
+        current_user: The currently authenticated user.
+
+    Returns:
+        A dictionary containing all users.
+
+    Raises:
+        HTTPException: If the user is not an admin.
+    """
     role = get_user_role(current_user["uid"])
     if role != "admin":
         raise HTTPException(status_code=403, detail="Forbidden. Admins only.")

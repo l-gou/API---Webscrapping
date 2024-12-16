@@ -1,6 +1,7 @@
 import os
 import opendatasets as od
 from fastapi import APIRouter
+from typing import Dict
 import logging
 
 router = APIRouter()
@@ -9,7 +10,25 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 
 @router.get("/download-dataset", name="Download Iris Dataset")
-def download_dataset():
+def download_dataset() -> Dict[str, str]:
+    """
+    Download the Iris dataset from Kaggle and save it to the specified directory.
+
+    Endpoint:
+        GET /download-dataset
+
+    Returns:
+        Dict[str, str]: A dictionary containing the status message and the dataset's file location, 
+        or an error message in case of failure.
+
+    Behavior:
+        - Sets the `KAGGLE_CONFIG_DIR` environment variable to point to the directory containing `kaggle.json`.
+        - Downloads the Iris dataset if it doesn't already exist in the target directory.
+        - Logs the status of the operation.
+    
+    Raises:
+        Exception: If an error occurs during the dataset download process.
+    """
     try:
         # Specify the path to the folder where kaggle.json is located
         kaggle_json_path = "TP2and3/services/epf-flower-data-science/" 
